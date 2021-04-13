@@ -1,108 +1,50 @@
-import React, { Component } from "react";
-import "./App.css";
-import Radium, { StyleRoot } from "radium";
-import Person from "./Person/Person";
+import React, { useState } from 'react';
 
-class App extends Component {
-  state = {
-    persons: [
-      { id: "asd", name: "Max", age: 28 },
-      { id: "qwe", name: "Manu", age: 29 },
-      { id: "zxc", name: "Stephanie", age: 26 },
-    ],
-    otherState: "some other value",
-    showPersons: false,
-  };
+import CourseGoalList from './components/CourseGoals/CourseGoalList/CourseGoalList';
+import CourseInput from './components/CourseGoals/CourseInput/CourseInput';
+import './App.css';
 
-  nameChangedHandler = (event, id) => {
-    const personIndex = this.state.persons.findIndex((p) => {
-      return p.id === id;
-    });
+const App = () => {
+  const [courseGoals, setCourseGoals] = useState([
+    { text: 'Do all exercises!', id: 'g1' },
+    { text: 'Finish the course!', id: 'g2' }
+  ]);
 
-    const person = { ...this.state.persons[personIndex] };
-
-    person.name = event.target.value;
-    const persons = [...this.state.persons];
-    persons[personIndex] = person;
-
-    this.setState({
-      persons: persons,
+  const addGoalHandler = enteredText => {
+    setCourseGoals(prevGoals => {
+      const updatedGoals = [...prevGoals];
+      updatedGoals.unshift({ text: enteredText, id: Math.random().toString() });
+      return updatedGoals;
     });
   };
 
-  deletePersonHandler = (personIndex) => {
-    // const persons = this.state.persons.slice();
-    const persons = [...this.state.persons];
-    persons.splice(personIndex, 1);
-    this.setState({ persons: persons });
+  const deleteItemHandler = goalId => {
+    setCourseGoals(prevGoals => {
+      const updatedGoals = prevGoals.filter(goal => goal.id !== goalId);
+      return updatedGoals;
+    });
   };
 
-  togglePersonsHandler = () => {
-    const doesShow = this.state.showPersons;
-    this.setState({ showPersons: !doesShow });
-  };
+  let content = (
+    <p style={{ textAlign: 'center' }}>No goals found. Maybe add one?</p>
+  );
 
-  render() {
-    const style = {
-      backgroundColor: "green",
-      color: "white",
-      font: "inherit",
-      border: "1x solid blue",
-      padding: "8px",
-      cursor: "pointer",
-      ":hover": {
-        backgroundColor: "lightgreen",
-        color: "black",
-      },
-    };
-
-    let persons = null;
-
-    if (this.state.showPersons) {
-      persons = (
-        <div>
-          {this.state.persons.map((person, index) => {
-            return (
-              <Person
-                key={person.id}
-                name={person.name}
-                age={person.age}
-                click={() => this.deletePersonHandler(index)}
-                changed={(event) => this.nameChangedHandler(event, person.id)}
-              />
-            );
-          })}
-        </div>
-      );
-      style.backgroundColor = "red";
-      style[":hover"] = {
-        backgroundColor: "salmon",
-        color: "black",
-      };
-    }
-
-    let classes = [];
-    if (this.state.persons.length <= 2) {
-      classes.push("red");
-    }
-    if (this.state.persons.length <= 1) {
-      classes.push("bold");
-    }
-
-    return (
-      <StyleRoot>
-        <div className="App">
-          <h1>Hi, I'm a React App</h1>
-          <p className={classes.join(" ")}>This is really working!</p>
-          <button onClick={this.togglePersonsHandler} style={style}>
-            Toggle Persons
-          </button>
-          {persons}
-        </div>
-      </StyleRoot>
+  if (courseGoals.length > 0) {
+    content = (
+      <CourseGoalList items={courseGoals} onDeleteItem={deleteItemHandler} />
     );
-    // return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Does this work now?'));
   }
-}
 
-export default Radium(App);
+  return (
+      <div>
+        <section id="goal-form">
+          <CourseInput onAddGoal={addGoalHandler} />
+        </section>
+        <section id="goals">
+          {content}
+        </section>
+      </div>
+  );
+};
+
+export default App;
